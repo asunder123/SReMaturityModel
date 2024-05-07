@@ -1,0 +1,198 @@
+# This is a basic workflow to help you get started with Actions
+
+name: CI
+
+# Controls when the action will run. Triggers the workflow on push or pull request
+# events but only for the master branch
+on:
+  push:
+    branches: [ master ]
+  create:
+    branches: [master]  
+  pull_request:
+    branches: [ master ]
+ 
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  # This workflow contains a single job called "build"
+  build:
+    # The type of runner that the job will run on
+    runs-on: ubuntu-latest
+    
+
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      - uses: actions/checkout@v2
+ 
+      # Runs a single command using the runners shell
+      - name: Run a one-line script
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: |
+              python -m pip install --upgrade pip
+              pwd
+              status=$?
+              if test $status -eq 0
+              then 
+               echo "Successful"
+              else 
+               echo "Failed"
+              fi
+        
+      #- name: Open Telegraf port
+       # working-directory: ${{runner.workspace-directory}}
+       # shell: bash
+        #run:  sudo ufw allow 8000:8086/tcp
+      - name: QAllow TCP Port 8086
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: sudo ufw allow 8000:8086/tcp  
+          
+      - name: Allow ports
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: |
+              sudo ufw allow 4000:9999/tcp
+         
+              
+      - name: Change to working directory
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: cd ${{runner.workspace-directory}}
+        
+      - name: List all directories
+        working-directory:  ${{runner.workspace-directory}}
+        shell : bash
+        run: ls -ltr
+
+      - name: Login to DockerHub
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: sudo docker login -u asunder123 -p Docker@123
+
+    
+      
+      - name: Build from a docker file
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: sudo docker build .   
+        
+       
+ 
+
+
+        
+      - name: List Directories recursively
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run:  ls -ltr
+        
+    
+      
+      
+
+        
+     
+      
+
+        
+     # - name: Docker run influxdb with curl
+     #   working-directory: ${{runner.workspace-directory}}
+     #   shell: bash
+     #   run: |
+     #         sudo docker run -p 8086:8086 -v $PWD:/var/lib/influxdb influxdb
+        
+      - name: Allow Http
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: sudo ufw allow http
+     
+      - name: List docker processes
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: sudo docker ps -a
+        
+      - name: Docker compose-up build
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: |
+              sudo sh -c 'echo never > /sys/kernel/mm/transparent_hugepage/enabled'
+              sudo pip3 uninstall pyserial
+              sudo sysctl vm.overcommit_memory=1
+              sudo pip install --ignore-installed --no-cache-dir pip
+              sudo docker-compose up --build
+        
+  
+      
+      - name: AppDynamics agent
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: |
+              sudo docker pull appdynamics/cluster-agent-operator
+              sudo ufw allow 8082/tcp
+              sudo docker images
+              sudo docker run -d appdynamics/cluster-agent-operator --publish 8082:8082 nginx
+              
+          
+             
+      
+     
+      
+                        
+      - name: Docker Swarm
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run: |
+              sudo docker swarm init --advertise-addr eth0
+              sudo docker swarm join-token manager
+              
+     
+    
+       
+      
+        
+      - name: Netstat 
+        working-directory: ${{runner.workspace-directory}}
+        shell: bash
+        run:  sudo netstat -ano
+        
+ 
+        
+ 
+  
+        
+
+                 
+      #- name: Active-Gate installation
+       # working-directory: ${{runner.workspace-directory}}
+       # shell: bash
+       # run: |
+        #       sudo wget  -O Dynatrace-ActiveGate-Linux-x86-1.201.92.sh "https://tlk00961.live.dynatrace.com/api/v1/deployment/installer/gateway/unix/latest?arch=x86&flavor=default" --header="Authorization: Api-Token OUxRD5HDSQyxCDMgAvYMX"  
+        #       sudo wget https://ca.dynatrace.com/dt-root.cert.pem ; ( echo 'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256"; boundary="--SIGNED-INSTALLER"'; echo ; echo ; echo '----SIGNED-INSTALLER' ; cat Dynatrace-ActiveGate-Linux-x86-1.201.92.sh ) | openssl cms -verify -CAfile dt-root.cert.pem > /dev/null  
+         #      sudo /bin/sh Dynatrace-ActiveGate-Linux-x86-1.201.92.sh   
+                
+                
+    #  - name: Dynatrace Download binary
+     #   working-directory: ${{runner.workspace-directory}}
+      #  shell: bash
+       # run: sudo wget  -O Dynatrace-OneAgent-Linux-1.201.129.sh "https://tlk00961.live.dynatrace.com/api/v1/deployment/installer/agent/unix/default/latest?arch=x86&flavor=default" --header="Authorization:Api-Token OUxRD5HDSQyxCDMgAvYMX"  
+  
+        
+      #- name: Verify Dynatrace binary Signature 
+      #  working-directory: ${{runner.workspace-directory}}
+      #  shell: bash
+      #  run: |
+       #       sudo wget https://ca.dynatrace.com/dt-root.cert.pem ; ( echo 'Content-Type: multipart/signed; protocol="application/x-pkcs7-signature"; micalg="sha-256"; boundary="--SIGNED-INSTALLER"'; echo ; echo ; echo '----SIGNED-INSTALLER' ; cat Dynatrace-OneAgent-Linux-1.201.129.sh ) | openssl cms -verify -CAfile dt-root.cert.pem > /dev/null  
+        
+      #- name: Run Dynatrace one agent
+       # working-directory: ${{runner.workspace-directory}}
+       # shell: bash
+        #run: |
+         #     sudo /bin/sh Dynatrace-OneAgent-Linux-1.201.129.sh --set-app-log-content-access=true --set-infra-only=false 
+        
+ 
+        
+            
